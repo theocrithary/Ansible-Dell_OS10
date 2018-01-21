@@ -1,0 +1,5 @@
+.vagrant
+.vagrant/*
+centos65-x86_64-20140116.box
+NOS-VM-Template.ova
+PKGS_OS10-Enterprise-10.4.0E.R1.56-installer-x86_64.bin
