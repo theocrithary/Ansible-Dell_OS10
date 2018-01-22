@@ -1,0 +1,57 @@
+## Import and start the base networking VM ##
+Open “NOS-VM-Template.ova” with VirtualBox and import the VM
+Give the VM a name and choose the location to store the VM locally
+Edit the Virtual Disk Image file name for the VMDK if you want it to match the VM name (optional)
+Select the checkbox to ‘Reinitialize the MAC address of all network cards’
+Import and then go into settings --> network --> change the ‘Attached to:’ setting to “NAT”
+Click on advanced and add a rule to forward port 2201 on host to the guest port 22
+Start the VM
+The VM will boot into a pre-install linux kernel called ONIE (Open Network Install Environment)
+
+## Upload the Dell OS10 image to the VM ##
+Use WinSCP to connect via SCP (not SFTP) to 127.0.0.1 on port 2201 with the username root (no password)
+Upload the file ‘PKGS_OS10-Enterprise-10.4.0E.R1.56-installer-x86_64.bin’ from your local copy into the remote VM directory ‘/root’
+
+## Install OS10 ##
+Press enter and type ‘onie-discovery-stop’ (this stops the auto discovery boot process)
+Run the following command on the VM console:
+onie-nos-install /root/PKGS_OS10-Enterprise-10.4.0E.R1.56-installer-x86_64.bin
+#OS10 should install itself, then reboot into a login prompt
+#You will now be able to login to OS10 with username admin and password admin
+
+## Build the Ansible mgmt server ##
+Open a dos prompt and cd into the directory containing your files prepared earlier;
+Vagrant up
+# A new VM will be created in Virtualbox
+
+## Configure the switch ##
+Edit the OS10 SIM VM network settings to allow the two VMs to communicate
+Edit the network ‘attached to:’ for Adapter 1 to be “Host-only Adapter”
+Type the following commands in the OS10 VM console:
+
+conf t
+int mgmt. 1/1/1
+no ip address dhcp
+ip address 192.168.56.40/24
+shut
+no shut
+exit
+ip ssh server enable
+ip ssh server kex diffie-helman-group1-sha1
+ping 192.168.56.10 (confirm ping is successful)
+
+# We now have a linux VM with Ansible installed and a Dell OS10 VM that are connected on the same network and can communicate with each other.
+
+## Start to use Ansible ##
+Use putty to ssh to 127.0.0.1 on port 2222 (remember, this is the port vagrant setup for the mgmt VM)
+Edit /etc/ansible/hosts as follows;
+[switch]
+192.168.56.40
+Run the following command to test that we can use Ansible to ping the switch
+ansible all -m ping -k -u admin
+Type ‘yes’ to accept the ssh key when asked
+ansible-playbook -i inventory.yaml showver_os10.yaml
+ansible-playbook -i inventory.yaml getfacts_os10.yaml
+ansible-playbook -i inventory.yaml hostname_os10.yaml
+
+## All done!!!!1

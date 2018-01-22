@@ -1,2 +1,2 @@
 [dellos10]
-dellos10_sw1 ansible_host=192.168.56.40
+dellos10-sw1 ansible_host=192.168.56.40

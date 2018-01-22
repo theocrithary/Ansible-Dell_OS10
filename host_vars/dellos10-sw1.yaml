@@ -1,4 +1,4 @@
-hostname: dellos10_sw1
+hostname: dellos10-sw1
 cli:
   host: "{{ ansible_host }}"
   username: admin
